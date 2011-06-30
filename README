@@ -5,6 +5,11 @@ Minecraft Server on Linux.
 See INSTALL to get started quickly or read on about how to 
 configure MC Wrapper to your liking.
 
+MC Wrapper is free software is provided to you with NO WARRANTY.
+You are free to distribute and modify this program under the
+terms of the GNU GPL v2.1. See the LICENSE file for details or
+visit http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+
 Features:
  - runs minecraft without the need for an open shell or programs
    such as screen
