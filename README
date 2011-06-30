@@ -1,0 +1,128 @@
+MC Wrapper v0.1
+
+MC Wrapper is a simple Perl script designed to help you run a 
+Minecraft Server on Linux.
+See INSTALL to get started quickly or read on about how to 
+configure MC Wrapper to your liking.
+
+Features:
+ - runs minecraft without the need for an open shell or programs
+   such as screen
+ - forks the process and runs as a regular user
+ - allows start, stop and backup of the minecraft server through
+   the use of the init script
+ - Allows you to set a Message of the Day
+ - Configurable delay and warning so users can disconnect 
+   before the server stops
+ - Allows non-ops users to use the /list command
+ - Ability to configure jar file name (if you're using something
+   other than the default minecraft_server.jar
+ - Ability to update the server using the included update script
+   (separate from the main mcwrapper.pl program)
+
+Currently it is designed to work on Redhat and derivitives. It
+has been tested extensively on CentOS 5. The Perl script itself
+was also tested on Ubuntu but I've not taken the time to write
+a Debian based init script. 
+
+It should work on any Unix or Unix-like system with Perl. It 
+currently won't work on Windows.
+
+-------------------------------------------------------------
+CONFIGURATION
+
+The minecraft.config file is intended to be copied to 
+/etc/sysconfig/minecraft to be read by the init file on a
+Redhat-like system. However it can be sourced anywhere to set the
+various environment variables used by the wrapper. 
+
+Variables used:
+
+MINECRAFT_HOME (required)
+Set this to the path where your minecraft installation is. 
+Copy the bin folder from this package to the same directory
+
+MINECRAFT_BACKUP_DIR (default: '$MINECRAFT_HOME/backup')
+Set this to the folder where you want to store backups
+
+MINECRAFT_WORLD (default: 'world')
+Set this to the folder your world files are in
+
+JAVA (defaults to the output of `which java`)
+Path to Java
+
+JAR (default: 'minecraft_server.jar')
+Name of the .jar file to start minecraft with.
+
+TAR (defaults to the output of `which tar`)
+Path to your tar program.
+
+MINECRAFT_MOTD
+A Message of the day to display to users when they log in.
+
+MC_WRAPPER_PID (default: /var/run/mcwrapper.pid)
+Path to the PID file for the wrapper. Changing this
+may cause the init script to fail.
+
+MC_SERVER_PID (default: /var/run/minecraft.pid)
+Path to the PID file for the minecraft server itself. 
+Changing this may cause the init script to fail.
+
+MINECRAFT_USER (default: root)
+*HIGHLY* recommended you change this to another user.
+Will run the minecraft wrapper and server under the specified
+username. 
+
+MINECRAFT_SHUTDOWN_WARN (default: 5)
+Number of seconds before the server will stop gracefully. The
+Console will warn all users that the server is shutting down.
+
+-------------------------------------------------------------------
+USAGE
+
+Server control:
+service minecraft start | stop | restart | backup
+
+Server Update:
+cd $MINECRAFT_HOME
+bin/update_minecraft.sh
+
+-------------------------------------------------------------------
+SIGNALS
+
+MC-Wrapper can be communicated with via signals. The following 
+signals are trapped and used:
+
+SIGTERM, SIGINT, SIGHUP
+All shutdown the server gracefully. In the future SIGHUP may be
+used to reload configuration of the wrapper only. 
+
+SIGUSR1
+Tells the wrapper to stop world saves, force a save all and then 
+backup the world files. World save will then be re-enabled.
+
+SIGKILL cannot be trapped. If for some reason SIGKILL is issued to 
+the wrapper then the actual server will keep running and you'll have
+to kill it manually. To be safe use the included init script to 
+control both processes. (the included init script will try to kill
+the main server process if for some reason it fails to kill the 
+wrapper)
+
+-------------------------------------------------------------------
+TODO
+ 
+  - Init scripts for other distros
+  - Configuration to allow other commands to be used by non-ops
+  - Multi-line MOTD
+  - Installer or RPM?
+  - Windows support (probably not soon)
+  - Anything else I think of to improve!
+
+------------------------------------------------------------------
+AUTHOR
+
+Chris Brown
+<cfreak@gmail.com>
+
+Feel free to contact me with questions, bugs, suggestions or offers
+of free stuff :)

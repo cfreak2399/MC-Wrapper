@@ -1,0 +1,121 @@
+#!/bin/sh
+#
+# chkconfig: - 91 35
+# description: Starts and stops Minecraft game server
+#
+# pidfile: /var/run/minecraft.pid
+
+# functions
+# Source function library.
+if [ -f /etc/init.d/functions ] ; then
+  . /etc/init.d/functions
+elif [ -f /etc/rc.d/init.d/functions ] ; then
+  . /etc/rc.d/init.d/functions
+else
+  exit 1
+fi
+
+# Avoid using root's TMPDIR
+unset TMPDIR
+
+# set the pid file.
+
+# source minecraft configuration
+if [ -f /etc/sysconfig/minecraft ]; then
+	. /etc/sysconfig/minecraft
+	
+	if [ "$MINECRAFT_PID" == "" ]; then
+		MINECRAFT_PID=/var/run/minecraft.pid
+	fi
+
+	if [ "$MINECRAFT_SHUTDOWN_WARN" == "" ]; then
+		MINECRAFT_SHUTDOWN_WARN=5
+	fi
+
+	# export so Perl can use the settings
+	export MINECRAFT_HOME
+	export MINECRAFT_WORLD
+	export MINECRAFT_MOTD
+	export MINECRAFT_USER
+	export MINECRAFT_SHUTDOWN_WARN
+	export MC_WRAPPER_PID
+	export MC_SERVER_PID
+else
+	MC_SERVER_PID=/var/run/minecraft.pid
+	MC_WRAPPER_PID=/var/run/mcwrapper.pid
+	MINECRAFT_SHUTDOWN_WARN=5
+fi
+
+SHUTDOWN_DELAY=`expr $MINECRAFT_SHUTDOWN_WARN + 2`
+RETVAL=0
+PROG=mcwrapper
+SERVER_PROG=minecraft
+
+WRAPPER="$MINECRAFT_HOME/bin/mcwrapper.pl"
+
+start() {
+	echo -n $"Starting $PROG: "
+	daemon $WRAPPER &> /dev/null
+	RETVAL=$?
+
+	if [ $RETVAL -eq 0 ]; then
+		touch /var/lock/subsys/minecraft
+	else
+		RETVAL=1
+	fi
+	return $RETVAL
+}
+
+stop() {
+	echo -n $"Shutting down $PROG: "
+	killproc -d $SHUTDOWN_DELAY $PROG -TERM
+
+	RETVAL=$?
+	if [ $RETVAL -eq 0 ]; then
+		rm -f /var/lock/subsys/minecraft
+	else
+		# make sure we're dead
+		killproc $PROG -KILL
+		killproc $SERVER_PROG -KILL
+		RETVAL=$?
+		if [ $RETVAL -eq 0 ]; then
+			rm -f /var/lock/subsys/minecraft
+		fi
+	fi
+
+	echo ""
+	return $RETVAL
+}
+
+restart() {
+	stop
+	start
+}
+
+# perform a minecraft backup
+backup() {
+	killproc $PROG -USR1
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		restart
+		;;
+	backup)
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|backup}"
+		exit 2
+esac
+
+exit $?
+

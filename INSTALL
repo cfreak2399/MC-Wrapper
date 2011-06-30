@@ -1,0 +1,41 @@
+Installation
+
+To install you'll need to have root access to your server. 
+If you don't, you'll need to bribe your admin. Money is 
+best. Pizza may work if your particular admin is hungry.
+
+If you're running a redhat or redhat based system these instructions
+will probably work for you. 
+
+1. Untar the release archive or checkout the latest git repository
+   (I'm assuming you already did this or you would be reading 
+   this file!)
+2. Become root
+3. Change directory to the folder that you untar-ed
+   (cd /path/to/untarred/mc-wrapper-version)
+4. Install the Proc::Daemon and IPC::Open2 perl modules
+   (best is to use CPAN to get the latest version. Though
+   they may be available from your yum repositories)
+5. Run the following commands:
+
+mkdir /usr/minecraft
+useradd -M -d /usr/minecraft -s /sbin/nologin minecraft
+mv minecraft.config /etc/sysconfig/minecraft
+mv minecraft.init /etc/init.d/minecraft
+mv bin/ /usr/minecraft
+cd /usr/minecraft
+mkdir backup
+chown -R minecraft.minecraft .
+chmod 755 bin/*
+./bin/update_minecraft.sh
+chkconfig --add minecraft 
+service minecraft start
+
+*NOTE* if you already have the minecraft_server.jar and a world
+you'd like to use them copy the jar and the world into the 
+/usr/minecraft folder. 
+
+If you're on some other distro you may need to modify the 
+minecraft.init script to suite your needs. Check out the 
+README for information on signals used by the wrapper and
+environment variables for configuration.
