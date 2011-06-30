@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+# This program is free software and is provided to you with NO WARRANTY.
+# You are free to modify and distribute this program under the terms of
+# the GNU GPL v2.1. See the LICENSE file or visit 
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt for more details
 
 use strict;
 use IPC::Open2;
