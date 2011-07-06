@@ -40,9 +40,18 @@ if [ -f /etc/sysconfig/minecraft ]; then
 	export MINECRAFT_SHUTDOWN_WARN
 	export MC_WRAPPER_PID
 	export MC_SERVER_PID
-else
+fi
+
+# define defaults if they aren't defined in the config
+if [ "$MC_SERVER_PID" == "" ]; then
 	MC_SERVER_PID=/var/run/minecraft.pid
+fi
+
+if [ "$MC_WRAPPER_PID" == "" ]; then
 	MC_WRAPPER_PID=/var/run/mcwrapper.pid
+fi
+
+if [ "$MINECRAFT_SHUTDOWN_WARN" == "" ]; then
 	MINECRAFT_SHUTDOWN_WARN=5
 fi
 
@@ -94,7 +103,8 @@ restart() {
 
 # perform a minecraft backup
 backup() {
-	killproc $PROG -USR1
+	# do this manually since we're sending the signal, not killing the program
+	kill -USR1 `cat $MC_WRAPPER_PID`
 	RETVAL=$?
 	echo
 	return $RETVAL
@@ -111,6 +121,7 @@ case "$1" in
 		restart
 		;;
 	backup)
+		backup
 		;;
 	*)
 		echo $"Usage: $0 {start|stop|restart|backup}"
