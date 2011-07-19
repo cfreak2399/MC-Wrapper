@@ -1,0 +1,5 @@
+MC-Wrapper CHANGELOG
+
+v 0.1   - initial release
+v 0.1.1 - init script backup wasn't calling the backup function. Fixed.
+v 0.1.2 - changed wrapper to look for "Save Complete" when backing up instead of pausing and hoping the save-all is done.
