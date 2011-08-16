@@ -1,4 +1,4 @@
-MC Wrapper v0.1
+MC Wrapper v0.1.3
 
 MC Wrapper is a simple Perl script designed to help you run a 
 Minecraft Server on Linux.
@@ -21,7 +21,7 @@ Features:
    before the server stops
  - Allows non-ops users to use the /list command
  - Ability to configure jar file name (if you're using something
-   other than the default minecraft_server.jar
+   other than the default minecraft_server.jar)
  - Ability to update the server using the included update script
    (separate from the main mcwrapper.pl program)
 
@@ -91,6 +91,14 @@ service minecraft start | stop | restart | backup
 Server Update:
 cd $MINECRAFT_HOME
 bin/update_minecraft.sh
+
+MC-Wrapper Debug options:
+
+mcwrapper.pl --console
+Don't fork, send output to STDOUT
+
+mcwrapper.pl --debug
+Enables console mode and outputs debug information
 
 -------------------------------------------------------------------
 SIGNALS
