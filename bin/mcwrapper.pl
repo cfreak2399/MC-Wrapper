@@ -18,6 +18,13 @@ my $result = GetOptions(
 
 $console_mode = 1 if $debug;
 
+sub echo_debug {
+	my $message = shift;
+	chomp($message);
+	print "[MC-WRAPPER DEBUG] $message\n" if $debug;
+}
+
+
 my $java_default = `which java`;
 chomp($java_default);
 my $tar_default = `which tar`;
@@ -37,7 +44,7 @@ my $pid_file = $ENV{MC_WRAPPER_PID} || '/var/run/mcwrapper.pid';
 my $spid_file = $ENV{MC_SERVER_PID} || '/var/run/minecraft.pid';
 my $shutdown_warning = $ENV{MINECRAFT_SHUTDOWN_WARN} || 5;
 
-print "Setting MOTD to: $MOTD\n" if $debug;
+echo_debug("Setting MOTD to: $MOTD");
 
 my $mc_user = $ENV{MINECRAFT_USER};
 my $mc_user_id;
@@ -69,7 +76,7 @@ unless( $pid ) {
 		print MCINPUT "save-on\n";
 		$check_for_save = 0;
 		my $message = "WARNING: Backup failed. Minecraft didn't respond with save signal.";
-		warn $message if $debug;
+		echo_debug( $message );
 		print MCINPUT "say $message\n";
 	};
 
@@ -97,20 +104,23 @@ unless( $pid ) {
 		unless( system( $tar, 'czvf',$bkfile, $world ) == 0 ) {
 			warn "Unable to create backup.";
 		}
+		echo_debug("Backup complete. enabling save");
 		print MCINPUT "save-on\n";
 	};
 
 	my $server_shutdown = sub {
+		echo_debug("Received shutdown signal. Shutdown in $shutdown_warning seconds.");
 		if( $shutdown_warning ) {
 			print MCINPUT "say Server is shutting down in $shutdown_warning seconds.\n";
 			sleep $shutdown_warning;
 		}
 		print MCINPUT "stop\n";
-		
+		echo_debug("stop issued. Waiting to ensure clean shutdown.");
 		sleep 2; # wait for clean shutdown
 		kill "KILL", $mcpid; # make sure it's really dead
 		close(MCOUTPUT);
 		close(MCINPUT);
+		echo_debug("Shutdown complete. Good-bye.");
 		exit;
 	};
 
@@ -121,21 +131,22 @@ unless( $pid ) {
 
 	my $direct_next_line_to;
 	while( my $mc_said = <MCOUTPUT> ) {
-		print $mc_said if $debug;
-		#if( $check_for_save && $mc_said =~ /Save complete/i ) {
-		if( $check_for_save && $mc_said =~ /gobbly goop/i ) {
+		echo_debug($mc_said);
+		if( $check_for_save && $mc_said =~ /Save complete/i ) {
+		#if( $check_for_save && $mc_said =~ /gobbly goop/i ) {
+			echo_debug("Caught Save Complete. Completing backup.");
 			$complete_backup->();
 		}
 
 		if( $direct_next_line_to && $mc_said =~ /(Connected players:.+)$/) {
-			print "Listing players for $direct_next_line_to\n" if $debug;
+			echo_debug("Listing players for $direct_next_line_to");
 			print MCINPUT "tell $direct_next_line_to $1\n";
 			$direct_next_line_to = '';
 		}
 
 		if( $MOTD && $mc_said =~ /\[INFO\]\s([^\[]+)\[\/[0-9\.:]+\]\slogged in/ ) {
 			my $player = $1;
-			print "giving the MOTD to $player\n" if $debug;
+			echo_debug("giving the MOTD to $player");
 			#$player =~ s/\s$//;
 			print MCINPUT "tell $player $MOTD\n";
 		}
@@ -143,12 +154,12 @@ unless( $pid ) {
 		if( $mc_said =~ /\[INFO\]\s([^\s]+) tried command: list/ ) {
 			print MCINPUT "list\n";
 			$direct_next_line_to = $1;
-			print "$direct_next_line_to issued list\n" if $debug;
+			echo_debug("$direct_next_line_to issued list");
 		}
 	}
 }
 else {
-	print "CLOSED" if $debug;
+	echo_debug("CLOSED");
 	unless( $debug ) {
 		open(PIDFILE,">$pid_file") or warn "Couldn't open $pid_file: $!\n";
 		print PIDFILE $pid;
